@@ -1,10 +1,14 @@
 import { Router } from "express";
-import { methods  as airDnDController } from "../controller/airDnD.controller";
+import { methods  as cliente } from "../controller/cliente";
 
 const router = Router();
 
-router.get("/Clientes",airDnDController.getClients);
-router.get("/Cliente/:id",airDnDController.getClient);
-router.post("/addCliente",airDnDController.addClient);
+router.get("/Clientes",cliente.getClients);
+router.get("/Cliente/:id",cliente.getClient);
+router.post("/addCliente",cliente.addClient);
+router.post("/delCliente",cliente.deleteClient);
+router.post("/updateCliente",cliente.updateClient);
+
+
 
 export default router;
