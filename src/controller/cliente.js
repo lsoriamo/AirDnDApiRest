@@ -66,12 +66,30 @@ const deleteClient = async (req, res) => {
 const updateClient = async (req, res) => {
     try {
         const connection = await getConnection();
-        const { id, delpassword } = req.body;
+        const { id, autoritypassword } = req.body;
 
-        if ((id !== undefined && id !== "") && delpassword === "hufrpmcrecyhgvi") {
-            const { name, surname, direction, id_document, email, nacionality  } = req.body;            
-            const result = await connection.execute("UPDATE Client Set name = ?,surname = ?,direction = ?,id_document = ?,email = ?,nacionality = ? where ID_Client = ?", name,surname,direction,id_document,email, nacionality, id);
-        res.json(result);
+        if ((id !== undefined && id !== "") && autoritypassword === "hufrpmcrecyhgvi") {
+            let { name, surname, direction, id_document, email, nacionality  } = req.body;
+            
+            const oldRow = await connection.query("Select * from Client where ID_Client = ?", id);
+            const oldRowJson = Object.values(JSON.parse(JSON.stringify(oldRow)))[0];
+            console.log(oldRowJson)
+            
+            if (name === undefined){ name = oldRowJson["Name"]}
+            if (surname === undefined){ surname = oldRowJson["Surname"]}
+            if (direction == undefined){ direction = oldRowJson["Direction"]}
+            if (id_document == undefined){ id_document = oldRowJson["ID_DOCUMENT"]}
+            if (email == undefined){ email = oldRowJson[" Email"]}
+            if (nacionality == undefined){ nacionality = oldRowJson["Nacionality"]}
+            console.log(oldRowJson["Surname"])
+            console.log (name,surname)
+
+            res.status(400).json({ message: "JSON." });
+        
+           
+           // const result = await connection.execute("UPDATE Client Set name = ?,surname = ?,direction = ?,id_document = ?,email = ?,nacionality = ? where ID_Client = ?"
+            //, name, surname, direction, id_document, email, nacionality, id);
+        //res.json(result);
         } else {
             res.status(400).json({ message: "Bad Request." });
         }
