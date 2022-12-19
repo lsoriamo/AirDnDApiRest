@@ -16,7 +16,7 @@ const getClient = async (req, res) => {
         const { id } = req.params;
         const connection = await getConnection();
         const result = await connection.query("Select * from Client where ID_Client = ?", id);
-        res.json(result);
+        res.json(result[0]);
     } catch (error) {
         res.status(500);
         res.send(error.message);
@@ -48,10 +48,10 @@ const addClient = async (req, res) => {
 const deleteClient = async (req, res) => {
     try {
         const connection = await getConnection();
-        const { id, delpassword } = req.body;
+        const { id } = req.params;
 
-        if ((id !== undefined && id !== "") && delpassword === "hufrpmcrecyhgvi") {
-            const result = await connection.execute("DELETE FROM Client SET WHERE ID_Client = ?", id);
+        if (id !== undefined && id !== "") {
+            const result = await connection.query("DELETE FROM Client WHERE ID_Client = ?", id);
             res.json(result)
         } else {
             res.status(400).json({ message: "Bad Request." });
@@ -66,12 +66,12 @@ const deleteClient = async (req, res) => {
 const updateClient = async (req, res) => {
     try {
         const connection = await getConnection();
-        const { id, autoritypassword } = req.body;
+        const { id_client, autoritypassword } = req.body;
 
-        if ((id !== undefined && id !== "") && autoritypassword === "hufrpmcrecyhgvi") {
+        if (id_client !== undefined && id_client !== "") {
             let { name, surname, direction, id_document, email, nacionality  } = req.body;
             
-            const oldRow = await connection.query("Select * from Client where ID_Client = ?", id);
+            const oldRow = await connection.query("Select * from Client where ID_Client = ?", id_client);
             const oldRowJson = Object.values(JSON.parse(JSON.stringify(oldRow)))[0];
             console.log(oldRowJson)
             
@@ -81,17 +81,14 @@ const updateClient = async (req, res) => {
             if (id_document == undefined){ id_document = oldRowJson["ID_DOCUMENT"]}
             if (email == undefined){ email = oldRowJson[" Email"]}
             if (nacionality == undefined){ nacionality = oldRowJson["Nacionality"]}
-            console.log(oldRowJson["Surname"])
+            console.log(connection)
             console.log (name,surname)
-
-            res.status(400).json({ message: "JSON." });
-        
-           
-           // const result = await connection.execute("UPDATE Client Set name = ?,surname = ?,direction = ?,id_document = ?,email = ?,nacionality = ? where ID_Client = ?"
-            //, name, surname, direction, id_document, email, nacionality, id);
-        //res.json(result);
+            let client ={id_client, name, surname, direction, id_document, email, nacionality}
+                 
+            const result = await connection.query("UPDATE Client Set name = ? where ID_Client = ?", [client, id_client]);
+            res.json(result);
         } else {
-            res.status(400).json({ message: "Bad Request." });
+            res.status(500).json({ message: "Bad Request." });
         }
        
     } catch (error) {
