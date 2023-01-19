@@ -16,6 +16,7 @@ const getClient = async (req, res) => {
         const { id } = req.params;
         const connection = await getConnection();
         const result = await connection.query("Select * from Client where ID_Client = ?", id);
+        console.log(result[0])
         res.json(result[0]);
     } catch (error) {
         res.status(500);
@@ -27,13 +28,13 @@ const addClient = async (req, res) => {
 
     try {
         const connection = await getConnection();
-        const { name, surname, direction, id_document, email, nacionality } = req.body;
+        const { name, surname, direction, phone, id_document, email, nacionality, observation } = req.body;
 
-        if (name === undefined || surname === undefined || direction === undefined || id_document === undefined ||
-            email === undefined || nacionality === undefined) {
+        if (name === undefined || surname === undefined || direction === undefined || phone === undefined ||
+            id_document === undefined || email === undefined || nacionality === undefined) {
             res.status(400).json({ message: "Bad Request. Please fill all fields." });
         } else {
-            const cliente = { name, surname, direction, id_document, email, nacionality };
+            const cliente = { name, surname, direction, phone, id_document, email, nacionality, observation };
             const result = await connection.query("INSERT INTO Client SET ?", cliente);
 
             res.json(result)

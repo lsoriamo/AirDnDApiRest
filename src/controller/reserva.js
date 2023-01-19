@@ -121,7 +121,7 @@ const checkinReserve = async (req, res) => {
         if (date !== undefined && date !== "") {
             date = new Date(date)
             const result = await connection.query(
-                "Select c.name, c.surname, c.email, rt.Apart_Name_id, rt.start_date, rt.details from Reserve_Table rt"+
+                "Select c.name, c.surname, c.phone, rt.Apart_Name_id, c.email, rt.details from Reserve_Table rt"+
                 " inner join Client c on rt.id_client = c.id_client"+
                 " WHERE start_date = ?", date);
             res.json(result)
@@ -145,7 +145,7 @@ const checkoutReserve = async (req, res) => {
             const result = await connection.query(
                 "Select c.name, c.surname, c.email, rt.Apart_Name_id, rt.start_date, rt.details from Reserve_Table rt"+
                 " inner join Client c on rt.id_client = c.id_client"+
-                " WHERE start_date = ?", date);
+                " WHERE finish_date = ?", date);
             res.json(result)
         } else {
             res.status(400).json({ message: "Bad Request." });
