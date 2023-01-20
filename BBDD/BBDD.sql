@@ -2,11 +2,14 @@ create database if not exists AparthotelDB;
 
 # Privilegios para `admin`@`%`
 
+USE AparthotelDB;
+
+
 GRANT ALL PRIVILEGES ON *.* TO `admin`@`%` IDENTIFIED BY PASSWORD '*67A88380898811C81F629ABCC8B56AFC5DD78FF5' WITH GRANT OPTION;
 
 Create or replace table Apart_Tipe(
 	Apart_Tipe_id int auto_increment,
-	Shorname VARCHAR(4) not null,
+	Shortname VARCHAR(4) not null,
     Description varchar(80) not null,
 	Price_min decimal(6,2) not null,
 	Price_medium decimal(6,2) not null,
@@ -44,12 +47,12 @@ Create or replace table Reserve_Status(
 );
 
 Create or replace table PagosOperacion(
-	Operarion_id int auto_increment,
+	Operation_id int auto_increment,
 	ID_Client int not null,
 	Total decimal(10,2) not null,
 	Paid decimal(10,2) not null,
 	foreign key(ID_Client) references Client(ID_Client),
-    primary key(Operarion_id)
+    primary key(Operation_id)
 );
 
 
@@ -73,11 +76,11 @@ Create or replace table Facturas(
 );
 
 Create or replace table OperacionxFacturas(
-	Operarion_id int not null,
+	Operation_id int not null,
 	Facturas_id int not null,
-	foreign key(Operarion_id) references PagosOperacion(Operarion_id),
+	foreign key(Operation_id) references PagosOperacion(Operation_id),
 	foreign key(Facturas_id) references Facturas(Facturas_id),
-    primary key(Operarion_id, Facturas_id)
+    primary key(Operation_id, Facturas_id)
 );
 
 Create or replace table Reserve_Table(
@@ -85,19 +88,18 @@ Create or replace table Reserve_Table(
     Apart_Name_id int not null,
 	ID_Client int not null,
 	Reserve_Status_id int not null,
-	Operarion_id int not null,
+	Operation_id int not null,
 	Start_Date date not null,
 	Finish_Date date not null,
 	Details VARCHAR(500) null,
 	foreign key(ID_Client) references Client(ID_Client),
 	foreign key(Reserve_Status_id) references Reserve_Status(Reserve_Status_id),
-	foreign key(Operarion_id) references PagosOperacion(Operarion_id),
+	foreign key(Operation_id) references PagosOperacion(Operation_id),
 	foreign key(Apart_Name_id) references Apart_Name(Apart_Name_id),
     primary key(Reserve_table_id)
 );
 
 Create or replace table Incidencia_Status(
-	Incidencia_Status_id int auto_increment,
 	Incidencia_Status_id int auto_increment,
 	Shortname varchar(4) not null,
 	Name varchar(20) not null,
@@ -114,31 +116,28 @@ Create or replace table Incidencias(
 );
 
 
---Insert de Prueba;
-INSERT INTO `Apart_Tipe` (`Apart_Tipe_id`, `shortname`, `Description`, `Price_min`, `Price_medium`, `Price_high`, `Number_Person`) VALUES
+#Insert de Prueba;
+INSERT INTO `Apart_Tipe` (`Apart_Tipe_id`, `Shortname`, `Description`, `Price_min`, `Price_medium`, `Price_high`, `Number_Person`) VALUES
 (1, '2HNR', 'Apartamento 2 habitaciones', '50.00', '60.00', '80.00', 4),
 (2, '3HNR', 'Apartamento 3 habitaciones', '65.00', '90.00', '110.00', 7);
 
---CAJAS
+#CAJAS
 INSERT INTO `Cajas` (`Caja_id`, `Nombre`, `BIC`, `IBAN`) VALUES ('1', 'Caja Local1', NULL, NULL), ('2', 'Cuenta Visa(BBVA)', 'BBVAESMM000', 'ES2100001111224444444444');
 
---Pagos
+#Pagos
 INSERT INTO `Facturas` (`Facturas_id`, `Concepto`, `Paid_Date`, `Cantidad`, `Caja_id`) VALUES ('1', 'Pago habitacion', '2022-12-07', '237', '1'), ('2','Reserva habitacion', '2022-12-09', '24','2');
 
---REferencias de los Pagos
-INSERT INTO `OperacionxFacturas` (`Operarion_id`, `Facturas_id`) VALUES ('1', '1'), ('2', '2');
+#Clientes
+INSERT INTO `Client` (`ID_Client`, `Name`, `Surname`, `Direction`, `Phone`, `ID_DOCUMENT`, `Email`, `Nacionality`, `Observation`) VALUES (NULL, 'Fernando', 'ErGheta', 'C de verdad 32', '696696696', '12323456N', 'ilovefrancia12years@tuenti.es', 'Guzmaniense', 'Amor por Francia y los bolis de 4 colores'), (NULL, 'Antonio', 'Moreno', 'C Falsa 23', '645645645', '23237492N', 'emaildeverdad@hotmail.es', 'Espanola', NULL);
+
+#REferencias de los Pagos
+INSERT INTO `PagosOperacion` (`Operation_id`, `ID_Client`, `Total`, `Paid`) VALUES (NULL, '2', '237', '237'), (NULL, '1', '240', '24');
+INSERT INTO `OperacionxFacturas` (`Operation_id`, `Facturas_id`) VALUES ('1', '1'), ('2', '2');
 
 
 INSERT INTO `Apart_Name` (`Apart_Name_id`, `Description_Number`, `Direction`, `Apart_Tipe_id`) VALUES
 (1, '1.Piso acogedor con buenas vistas.', 'C. Falsisima junto a la costa', 1),
 (2, '2.Piso acogedor con buenas vistas.', 'C. Falsisima junto a la costa', 1);
-
-
-INSERT INTO `Client` (`ID_Client`, `Name`, `Surname`, `Phone`, `Direction`, `ID_DOCUMENT`, `Email`, `Nacionality`, `Observation`) VALUES
-(1, 'Antonio', 'Moreno', '676768923', 'false 11', '213455f', 'correofalso@gmail.com', 'espaniol', NULL),
-(2, 'Fernando', 'ErGHeta', '696969696', 'Calle de verdad 34', '213455f', 'ilovefrancia@gmail.com', 'espaniol', NULL),
-(3, 'Samuelle', 'Italiano', '787563029', 'Asalf 12', '2134525f', 'deefeff@gmail.com', 'frances', NULL);
-
 
 
 INSERT INTO `Incidencia_Status` (`Incidencia_Status_id`, `shortname`, `name`) VALUES
@@ -154,10 +153,10 @@ INSERT INTO `Reserve_Status` (`Reserve_Status_id`, `shortname`, `name`) VALUES
 (4, 'END', 'Finalizado'),
 (5, 'CANC', 'Cancelado');
 
-INSERT INTO `Reserve_Table` (`Reserve_table_id`, `Apart_Name_id`, `ID_Client`, `Reserve_Status_id`, `Operarion_id`, `Start_Date`, `Finish_Date`, `Details`) 
+INSERT INTO `Reserve_Table` (`Reserve_table_id`, `Apart_Name_id`, `ID_Client`, `Reserve_Status_id`, `Operation_id`, `Start_Date`, `Finish_Date`, `Details`) 
 VALUES 
-(NULL, '1', '1', '3', '1', '2022-12-05', '2022-12-10', NULL), (
-NULL, '2', '3', '6', '2', '2023-01-02', '2023-01-07', 'Llegada tardia');
+(NULL, '1', '1', '2', '1', '2022-12-05', '2022-12-10', NULL), (
+NULL, '2', '3', '3', '2', '2023-01-02', '2023-01-07', 'Llegada tardia');
 
 
 
