@@ -1,166 +1,219 @@
-create database if not exists AparthotelDB;
+create database if not exists ONEIRE_DB;
 
 # Privilegios para `admin`@`%`
 
-USE AparthotelDB;
+USE ONEIRE_DB;
 
 
 GRANT ALL PRIVILEGES ON *.* TO `admin`@`%` IDENTIFIED BY PASSWORD '*67A88380898811C81F629ABCC8B56AFC5DD78FF5' WITH GRANT OPTION;
 
-Create or replace table Apart_Tipe(
-	Apart_Tipe_id int auto_increment,
-	Shortname VARCHAR(4) not null,
-    Description varchar(80) not null,
-	Price_min decimal(6,2) not null,
-	Price_medium decimal(6,2) not null,
-	Price_high decimal(6,2) not null,
-	Number_Person int not null,
-    primary key(Apart_Tipe_id));
+Create or replace table Client_group(
+	group_id int auto_increment,
+	name varchar(20) not null,
+	description varchar(1000) null,
+    primary key(group_id)
+);
 
 Create or replace table Client(
-	ID_Client int auto_increment,
-	Name varchar(300) not null,
-    Surname varchar(300) not null,
-	Direction varchar(500) null,
-	Phone varchar(18) not null,
-	ID_DOCUMENT varchar(12) not null,
-	Email VARCHAR(100) not null,
-	Nacionality VARCHAR(120) not null,
-	Observation VARCHAR(1000) null,
-    primary key(ID_Client)
+	client_id int auto_increment,
+	name varchar(20) not null,
+	password varchar(200) not null,
+	group_id int not null,
+	CONSTRAINT nameUnico UNIQUE (name),
+	foreign key(group_id) references Client_group(group_id),
+    primary key(client_id)
 );
 
-Create or replace table Apart_Name(
-	Apart_Name_id int auto_increment,
-    Description_Number varchar(80) not null,
-	Direction VARCHAR(500) not null,
-	Apart_Tipe_id int not null,
-	foreign key(Apart_Tipe_id) references Apart_Tipe(Apart_Tipe_id),
-    primary key(Apart_Name_id) 
+Create or replace table Client_session(
+	id_session int auto_increment,
+	client_id int not null,
+	session_token VARCHAR(3) not null,
+	session_initconn datetime not null,
+	session_lastconn datetime not null,
+	session_active BOOLEAN not null,
+	foreign key(client_id) references Client(client_id),
+	primary key(id_session)
+);
+CREATE OR REPLACE TABLE Test_Status(
+	test_status_id int auto_increment,
+	name varchar(50),
+	description varchar(100),
+	shortname varchar(3),
+    primary key(test_status_id)
 );
 
-Create or replace table Reserve_Status(
-	Reserve_Status_id int auto_increment,
-	Shortname varchar(4) not null,
-	Name varchar(20) not null,
-    primary key(Reserve_Status_id)
+Create or replace table Photo_test(
+	photo_id int auto_increment,
+	test_txt varchar(5000),
+	photo blob not null,
+	upload_photo datetime not null,
+    primary key(Photo_id));
+
+Create or replace table Test(
+	test_id int auto_increment,
+	client_id int not null,
+	test_status_id int not null,
+	test_xml_text varchar(5000) not null,
+	creation_test datetime not null,
+	foreign key(client_id) references Client(client_id),
+	foreign key(test_status_id) references Test_Status(test_status_id),
+	primary key(test_id)
 );
 
-Create or replace table PagosOperacion(
-	Operation_id int auto_increment,
-	ID_Client int not null,
-	Total decimal(10,2) not null,
-	Paid decimal(10,2) not null,
-	foreign key(ID_Client) references Client(ID_Client),
-    primary key(Operation_id)
-);
-
-
-Create or replace table Cajas(
-	Caja_id int auto_increment,
-	Nombre varchar(250) not null,
-	BIC VARCHAR(30) null,
-	IBAN VARCHAR(30) null,
-	primary key(Caja_id)
-);
-
-
-Create or replace table Facturas(
-	Facturas_id int auto_increment,
-	Concepto VARCHAR(250) not null,
-	Paid_Date date not null,
-	Cantidad decimal(10,2) not null,
-	Caja_id int not null,	
-	foreign key(Caja_id) references Cajas(Caja_id),
-    primary key(Facturas_id)
-);
-
-Create or replace table OperacionxFacturas(
-	Operation_id int not null,
-	Facturas_id int not null,
-	foreign key(Operation_id) references PagosOperacion(Operation_id),
-	foreign key(Facturas_id) references Facturas(Facturas_id),
-    primary key(Operation_id, Facturas_id)
-);
-
-Create or replace table Reserve_Table(
-	Reserve_table_id int auto_increment,
-    Apart_Name_id int not null,
-	ID_Client int not null,
-	Reserve_Status_id int not null,
-	Operation_id int not null,
-	Start_Date date not null,
-	Finish_Date date not null,
-	Details VARCHAR(500) null,
-	foreign key(ID_Client) references Client(ID_Client),
-	foreign key(Reserve_Status_id) references Reserve_Status(Reserve_Status_id),
-	foreign key(Operation_id) references PagosOperacion(Operation_id),
-	foreign key(Apart_Name_id) references Apart_Name(Apart_Name_id),
-    primary key(Reserve_table_id)
-);
-
-Create or replace table Incidencia_Status(
-	Incidencia_Status_id int auto_increment,
-	Shortname varchar(4) not null,
-	Name varchar(20) not null,
-    	primary key(Incidencia_Status_id)
-);
-
-Create or replace table Incidencias(
-	Incidencia_id int auto_increment,
-	Incidencia_status_id int not null,
-	Description varchar(1000) not null,
-	Work_realized varchar(1000) null,
-	foreign key(Incidencia_status_id) references Incidencia_Status(Incidencia_status_id),
-    primary key(Incidencia_id)
+Create or replace table Test_x_photo(
+	test_id int not null,
+	photo_id int not null,
+	foreign key(test_id) references Test(test_id),
+	foreign key(photo_id) references Photo_test(photo_id),
+    primary key(test_id, photo_id) 
 );
 
 
-#Insert de Prueba;
-INSERT INTO `Apart_Tipe` (`Apart_Tipe_id`, `Shortname`, `Description`, `Price_min`, `Price_medium`, `Price_high`, `Number_Person`) VALUES
-(1, '2HNR', 'Apartamento 2 habitaciones', '50.00', '60.00', '80.00', 4),
-(2, '3HNR', 'Apartamento 3 habitaciones', '65.00', '90.00', '110.00', 7);
+#Procedure para controlar las sesiones activas.
 
-#CAJAS
-INSERT INTO `Cajas` (`Caja_id`, `Nombre`, `BIC`, `IBAN`) VALUES ('1', 'Caja Local1', NULL, NULL), ('2', 'Cuenta Visa(BBVA)', 'BBVAESMM000', 'ES2100001111224444444444');
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `checksessions`()
+		BEGIN
+        	update Client_session SET session_active = IF(session_lastconn < (NOW()- INTERVAL 1 HOUR), 0, 1) where session_active = 1; 
+        END$$
+DELIMITER ;
 
-#Pagos
-INSERT INTO `Facturas` (`Facturas_id`, `Concepto`, `Paid_Date`, `Cantidad`, `Caja_id`) VALUES ('1', 'Pago habitacion', '2022-12-07', '237', '1'), ('2','Reserva habitacion', '2022-12-09', '24','2');
+DELIMITER $$
+	CREATE DEFINER=`root`@`localhost` PROCEDURE setconn(IN token_session VARCHAR(3))
+    	BEGIN
+        	update Client_session SET session_lastconn = NOW() where Client_session.session_token like token_session and session_active = 1; 
+        END$$
+DELIMITER ;
 
-#Clientes
-INSERT INTO `Client` (`ID_Client`, `Name`, `Surname`, `Direction`, `Phone`, `ID_DOCUMENT`, `Email`, `Nacionality`, `Observation`) VALUES (NULL, 'Fernando', 'ErGheta', 'C de verdad 32', '696696696', '12323456N', 'ilovefrancia12years@tuenti.es', 'Guzmaniense', 'Amor por Francia y los bolis de 4 colores'), (NULL, 'Antonio', 'Moreno', 'C Falsa 23', '645645645', '23237492N', 'emaildeverdad@hotmail.es', 'Espanola', NULL);
+DELIMITER //
+CREATE TRIGGER `CreationPhotoTime` BEFORE INSERT ON `Photo_test`
+ FOR EACH ROW BEGIN
+    SET NEW.upload_photo = NOW();
+END//
+DELIMITER ;
 
-#REferencias de los Pagos
-INSERT INTO `PagosOperacion` (`Operation_id`, `ID_Client`, `Total`, `Paid`) VALUES (NULL, '2', '237', '237'), (NULL, '1', '240', '24');
-INSERT INTO `OperacionxFacturas` (`Operation_id`, `Facturas_id`) VALUES ('1', '1'), ('2', '2');
+DELIMITER //
+CREATE TRIGGER `CreationTestTime` BEFORE INSERT ON `Test`
+ FOR EACH ROW BEGIN
+    SET NEW.creation_test = NOW();
+END//
+DELIMITER ;
+
+# Procedure para la gestion del login encriptado desencriptado.
+DELIMITER //
+	CREATE DEFINER=`root`@`localhost` PROCEDURE RegistrarUsuario(IN nam VARCHAR(200),IN pass VARCHAR(100), IN g_id int)
+    	BEGIN
+        	INSERT INTO Client(name,Client.password,group_id) VALUES(nam,ENCRYPT(pass,'124879lk'),g_id);
+        END//
+DELIMITER ;
+
+# Funciones, Procedures para la gestion de session
+DELIMITER //
+CREATE OR REPLACE FUNCTION Newletter()
+returns VARCHAR(1)
+BEGIN
+DECLARE letter VARCHAR(1);
+SET letter= substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', (RAND()*36)+1, 1);
+return letter;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE OR REPLACE FUNCTION Newtoken()
+returns VARCHAR(3)
+BEGIN
+DECLARE token VARCHAR(3);
+SET token= Concat(Newletter(),Newletter(),Newletter());
+return token;
+END//
+DELIMITER ;
+
+DELIMITER $$
+	CREATE DEFINER=`root`@`localhost` PROCEDURE newSession(IN id_user int)
+    	BEGIN
+        	DECLARE nt VARCHAR(3);
+            
+        	UPDATE Client_session c SET c.session_active = 0 where c.session_active=1 and c.client_id = id_user;	
+			label1: LOOP
+                SET nt = Newtoken();
+                if exists (SELECT 1 from Client_session c where c.session_active = 1 and c.session_token = nt) then
+                    ITERATE label1;
+                END IF;
+                LEAVE label1;
+			END LOOP label1;
+			
+			INSERT INTO `Client_session` (`id_session`, `client_id`, `session_token`, `session_initconn`, `session_lastconn`, `session_active`)
+				VALUES (NULL, id_user, nt,NOW(),NOW(), '1');
+			
+			SELECT cs.client_id as id_user, cs.session_token, c.group_id from Client_session cs INNER JOIN Client c on cs.client_id=c.client_id
+			where cs.session_active = 1 and c.client_id=id_user;							
+        END$$
+DELIMITER ;
+
+DELIMITER $$
+	CREATE DEFINER=`root`@`localhost` PROCEDURE checkpass(IN usr varchar(200), IN pas VARCHAR(100), OUT ok BOOLEAN, OUT id INT)
+    	BEGIN
+		   SET ok = false; 
+		   SET id = 0;
+		   SELECT Client_id INTO id from Client where Client.name like usr and Client.password like ENCRYPT(pas,'124879lk');
+		   IF id>0
+		   THEN
+			 SET ok = true; 
+		   END IF;
+        END$$
+DELIMITER ;
 
 
-INSERT INTO `Apart_Name` (`Apart_Name_id`, `Description_Number`, `Direction`, `Apart_Tipe_id`) VALUES
-(1, '1.Piso acogedor con buenas vistas.', 'C. Falsisima junto a la costa', 1),
-(2, '2.Piso acogedor con buenas vistas.', 'C. Falsisima junto a la costa', 1);
+DELIMITER $$
+	CREATE DEFINER=`root`@`localhost` PROCEDURE LogSession(IN usr varchar(200), IN pas VARCHAR(100), IN reset BOOLEAN)
+    	BEGIN
+			DECLARE logvalido BOOLEAN;
+			DECLARE existeSesion BOOLEAN;
+			DECLARE id INT;
+			SET logvalido = false;
+			SET id = 0;
+			SELECT Client_id INTO id from Client where Client.name like usr and Client.password like ENCRYPT(pas,'124879lk');
+			
+			IF (id>0)
+				THEN
+					 SET logvalido = true; 
+				END IF;
+			IF (logvalido)
+				THEN
+					if exists (SELECT c.id_session from Client_session c where c.session_active = 1 and c.client_id = id) then
+						SET existeSesion = true;
+					ELSE
+						SET existeSesion = false;
+					END IF;
+					SELECT Client_id INTO id from Client where Client.name like usr and Client.password like ENCRYPT(pas,'124879lk');
+					IF (reset or !existeSesion)
+						THEN
+							CALL newSession(id);
+						ELSE
+							SELECT cs.client_id as id_user, cs.session_token, c.group_id from Client_session cs INNER JOIN Client c on cs.client_id=c.client_id
+							where cs.session_active = 1 and c.client_id=id;
+						END IF;
+				ELSE
+					Select 0 as id_user, null as session_token, null as group_id;
+				END	IF;
+        END$$
+DELIMITER ;
+
+#Inicializacion de tablas necesarias
+
+# Perfiles usuarios
+INSERT INTO `Client_group` (`group_id`, `name`, `description`) VALUES (NULL, 'admin', 'Administrador'),(NULL, 'operator', 'Operador de Pruebas'),(NULL, 'guest', 'Invitado'),(NULL, 'decesed', 'Usuario dado de baja');
+
+# Usuarios
+call RegistrarUsuario('Antonio','1234',1);
+call RegistrarUsuario('Alberto','1234',1);
+
+# Test Status
+INSERT INTO `Test_Status` (`test_status_id`, `name`, `description`, `shortname`) VALUES 
+			(NULL, 'Pendiente', 'Test Pendiente', 'PND'),
+			(NULL, 'Completado', 'Test Completado', 'CMP'),
+			(NULL, 'Cancelado', 'Test Cancelado', 'CNC'),
+			(NULL, 'Parcial', 'Test Parcialmente Completado', 'PAR');
 
 
-INSERT INTO `Incidencia_Status` (`Incidencia_Status_id`, `shortname`, `name`) VALUES
-(1, 'OPEN', 'Abierta'),
-(2, 'CLSD', 'Cerrada'),
-(3, 'PEND', 'Pendiente');
-
-
-INSERT INTO `Reserve_Status` (`Reserve_Status_id`, `shortname`, `name`) VALUES
-(1, 'PEND', 'Pendiente'),
-(2, 'PAID', 'Pagado'),
-(3, 'RESV', 'Reservado'),
-(4, 'END', 'Finalizado'),
-(5, 'CANC', 'Cancelado');
-
-INSERT INTO `Reserve_Table` (`Reserve_table_id`, `Apart_Name_id`, `ID_Client`, `Reserve_Status_id`, `Operation_id`, `Start_Date`, `Finish_Date`, `Details`) 
-VALUES 
-(NULL, '1', '1', '2', '1', '2022-12-05', '2022-12-10', NULL), (
-NULL, '2', '3', '3', '2', '2023-01-02', '2023-01-07', 'Llegada tardia');
-
-
-
-
-
-
-
+delete from Test where test_id in (select t.test_id from Test t left join Test_x_photo p on p.test_id=t.test_id where p.test_id is null)

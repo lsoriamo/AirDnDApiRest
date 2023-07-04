@@ -1,19 +1,25 @@
 {
-  "name": "apirestdnd",
+  "name": "apiONEIRE",
   "version": "1.0.0",
   "description": "",
+  "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "babel-node":"babel-node --presets=@babel/preset-env",
+    "babel-node": "babel-node --presets=@babel/preset-env",
     "dev": "nodemon --exec npm run babel-node src/Index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^16.0.3",
+    "axios-retry": "^3.4.0",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "promise-mysql": "^5.2.0"
+    "http-proxy-middleware": "^2.0.6",
+    "promise-mysql": "^5.2.0",
+    "xml2js": "^0.5.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.19.3",
